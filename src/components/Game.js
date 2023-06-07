@@ -241,7 +241,7 @@ function Game() {
       )}
       {firstUsernameScreen && (
         <PlayerInput
-          label={`Player Name: "🟡"`}
+          label={`Player Name: ${username}`}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           handleUsername={handleUsername}
@@ -249,7 +249,7 @@ function Game() {
       )}
       {secondUsernameScreen && (
         <PlayerInput
-          label={`Another Player Name: "❌"`}
+          label={`Another Player Name: ${username}`}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           handleUsername={handleUsername}
