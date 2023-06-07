@@ -1,27 +1,100 @@
 import { useState, useEffect } from "react";
-import Square from './Square';
+import Square from "./Square";
 import WinnerScreen from "./WinnerScreen";
-import { Patterns } from '../utilities/Patterns'
+import { Patterns } from "../utilities/Patterns";
 
 //game sounds initialize
-const click = new Audio('./click.mp3')
-const gameWinnerSound = new Audio('./win.wav')
-const restartSound = new Audio('./restart.wav')
+const click = new Audio("./click.mp3");
+const gameWinnerSound = new Audio("./win.wav");
+const restartSound = new Audio("./restart.wav");
 
 //game sound functions
 const clickPlay = () => {
-  click.play()
-}
+  click.play();
+};
 const gameWinner = () => {
-  gameWinnerSound.play()
-}
+  gameWinnerSound.play();
+};
 const gameRestart = () => {
-  restartSound.play()
-}
+  restartSound.play();
+};
+
+// strat : move these to a seperate file
+const PlayerSelectionScreen = ({ handlePlayerSelection }) => {
+  return (
+    <div>
+      <h2>Choose Player</h2>
+      <div>
+        <button onClick={() => handlePlayerSelection("🟡")}>🟡</button>
+        <button onClick={() => handlePlayerSelection("❌")}>❌</button>
+      </div>
+    </div>
+  );
+};
+
+const PlayerInput = ({
+  label = "Player Name: {player}",
+  value,
+  onChange,
+  handleUsername,
+}) => {
+  return (
+    <div>
+      <h2>{label}</h2>
+      <div>
+        <input type="text" value={value} onChange={onChange} />
+        <button onClick={handleUsername}>Create</button>
+      </div>
+    </div>
+  );
+};
+
+const GameHistory = ({ gameHistory, handleGameHistory }) => {
+  return (
+    <div>
+      <h2>Game history</h2>
+      <div style={{ 
+        display: 'flex',
+        flexDirection: 'column'
+       }}>
+        {gameHistory.map((gHistory, i) => {
+          return (
+            <button
+              style={{
+                background: "#fff",
+                color: "#000",
+                border: "1px solid #000",
+                padding: "5px 10px",
+                margin: "5px",
+                cursor: "pointer",
+              }}
+              onClick={() => handleGameHistory(gHistory, i)}
+              className="hisotry"
+              key={i}
+            >
+              {gHistory.player}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// end
 
 
 
 function Game() {
+  const [gameStart, setGameStart] = useState(false);
+  const [isPlayerSelected, setIsPlayerSelected] = useState(false);
+  const [firstUsernameScreen, setFirstUsernameScreen] = useState(false);
+  const [secondUsernameScreen, setSecondUsernameScreen] = useState(false);
+  const [username, setUsername] = useState("");
+  const [usernames, setUsernames] = useState({});
+  const [gameHistory, setGameHistory] = useState([]);
+
+  
 
   //box index
   const [board, setBoard] = useState(["", "", "", "", "", "", "", "", ""]);
@@ -33,9 +106,8 @@ function Game() {
   const [wined, setWin] = useState(false);
 
   useEffect(() => {
-
-    checkWin()
-    checkIfTie()
+    checkWin();
+    checkIfTie();
 
     if (player == "❌") {
       setPlayer("🟡");
@@ -53,19 +125,42 @@ function Game() {
     }
   }, [result]);
 
+  useEffect(() => {
+    if (Object.keys(usernames).length === 2) {
+      setGameStart(true);
+      setSecondUsernameScreen(false);
+    }
+  }, [usernames]);
+
+  const initGame = () => {
+    setGameStart(false);
+    setIsPlayerSelected(false);
+    setFirstUsernameScreen(false);
+    setSecondUsernameScreen(false);
+    setUsername("");
+    // setUsernames({});
+    setGameHistory([]);
+  };
 
   //handling click on box
   const handleClick = (square) => {
-    clickPlay()
-    setBoard(
-      board.map((val, idx) => {
-        if (idx == square && val == "") {
-          return player;
-        }
-        return val;
-      })
-    );
-  }
+    if(board[square] !== "") return;
+    clickPlay();
+
+    const updatedBoard = board.map((val, idx) => {
+      if (idx == square && val == "") {
+        return player;
+      }
+      return val;
+    });
+    setBoard(updatedBoard);
+    gameHistory.push({
+      history: updatedBoard,
+      player: usernames[player],
+      playerSign: player,
+    });
+    setGameHistory([...gameHistory]);
+  };
 
   //checking winners
   const checkWin = () => {
@@ -81,16 +176,18 @@ function Game() {
 
       if (foundWinningPattern) {
         setResult({ winner: player, state: "Won" });
+        initGame();
       }
     });
   };
 
   //restart
   const restartGame = () => {
-    gameRestart()
+    gameRestart();
     setBoard(["", "", "", "", "", "", "", "", ""]);
     setPlayer("🟡");
-    setWin(false)
+    setWin(false);
+    setUsernames({});
   };
 
   //checking for tie
@@ -107,55 +204,133 @@ function Game() {
     }
   };
 
+  const handlePlayerSelection = (player) => {
+    setPlayer(player);
+    setFirstUsernameScreen(true);
+    setIsPlayerSelected(true);
+  };
+
+  const handleUsername = () => {
+    usernames[player] = username;
+    if (player === "❌") {
+      setPlayer("🟡");
+    } else {
+      setPlayer("❌");
+    }
+    setUsernames({ ...usernames });
+    setUsername("");
+    setFirstUsernameScreen(false);
+    setSecondUsernameScreen(true);
+  };
+
+  const handleGameHistory = (gHistory, index) => {
+    console.log({ gHistory });
+    //reset game according to history
+
+    setBoard(gHistory.history);
+    const updatedGameHistory = gameHistory.slice(0, index + 1);
+    setGameHistory(updatedGameHistory);
+  };
+
+  console.log({ usernames, board, gameHistory });
 
   return (
     <div className="Game">
-      <div className='board'>
-        <h1 className='title'>Let's Play <br /> Tic Tac T🟡e</h1>
-        <div className='row'>
-          <Square
-            chooseSquare={() => { handleClick(0) }}
-            val={board[0]}
-          />
-          <Square
-            chooseSquare={() => { handleClick(1) }}
-            val={board[1]}
-          />
-          <Square
-            chooseSquare={() => { handleClick(2) }}
-            val={board[2]}
+      {!isPlayerSelected && (
+        <PlayerSelectionScreen handlePlayerSelection={handlePlayerSelection} />
+      )}
+      {firstUsernameScreen && (
+        <PlayerInput
+          label={`Player Name: "🟡"`}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          handleUsername={handleUsername}
+        />
+      )}
+      {secondUsernameScreen && (
+        <PlayerInput
+          label={`Another Player Name: "❌"`}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          handleUsername={handleUsername}
+        />
+      )}
+      {gameStart && (
+        <div style={{ display: 'flex' }}>
+          <div className="board">
+            <h1 className="title">
+              Let's Play <br /> Tic Tac T🟡e
+            </h1>
+            <div className="row">
+              <Square
+                chooseSquare={() => {
+                  handleClick(0);
+                }}
+                val={board[0]}
+              />
+              <Square
+                chooseSquare={() => {
+                  handleClick(1);
+                }}
+                val={board[1]}
+              />
+              <Square
+                chooseSquare={() => {
+                  handleClick(2);
+                }}
+                val={board[2]}
+              />
+            </div>
+            <div className="row">
+              <Square
+                chooseSquare={() => {
+                  handleClick(3);
+                }}
+                val={board[3]}
+              />
+              <Square
+                chooseSquare={() => {
+                  handleClick(4);
+                }}
+                val={board[4]}
+              />
+              <Square
+                chooseSquare={() => {
+                  handleClick(5);
+                }}
+                val={board[5]}
+              />
+            </div>
+            <div className="row">
+              <Square
+                chooseSquare={() => {
+                  handleClick(6);
+                }}
+                val={board[6]}
+              />
+              <Square
+                chooseSquare={() => {
+                  handleClick(7);
+                }}
+                val={board[7]}
+              />
+              <Square
+                chooseSquare={() => {
+                  handleClick(8);
+                }}
+                val={board[8]}
+              />
+            </div>
+          </div>
+          <GameHistory
+            gameHistory={gameHistory}
+            handleGameHistory={handleGameHistory}
           />
         </div>
-        <div className='row'>
-          <Square
-            chooseSquare={() => { handleClick(3) }}
-            val={board[3]}
-          />
-          <Square
-            chooseSquare={() => { handleClick(4) }}
-            val={board[4]}
-          />
-          <Square
-            chooseSquare={() => { handleClick(5) }}
-            val={board[5]}
-          />
-        </div>
-        <div className='row'>
-          <Square
-            chooseSquare={() => { handleClick(6) }}
-            val={board[6]}
-          />
-          <Square
-            chooseSquare={() => { handleClick(7) }}
-            val={board[7]}
-          />
-          <Square
-            chooseSquare={() => { handleClick(8) }}
-            val={board[8]}
-          />
-        </div>
-      </div>
-      {wined ? <WinnerScreen restartGame={restartGame} playerWon={result.winner} /> : null}
+      )}
+      {wined ? (
+        <WinnerScreen username={usernames[result.winner]} restartGame={restartGame} playerWon={result.winner} />
+      ) : null}
     </div>
   );
 }

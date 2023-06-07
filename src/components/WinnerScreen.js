@@ -1,6 +1,7 @@
 import React from 'react'
 
-function WinnerScreen({ restartGame, playerWon }) {
+function WinnerScreen({ username, restartGame, playerWon }) {
+    console.log({ playerWon })
     return (
         <div className='winner'>
             <h2 className='congo'>
@@ -10,7 +11,7 @@ function WinnerScreen({ restartGame, playerWon }) {
                         : 'Congratulation!'
                 }
             </h2>
-            <h3 className='player'>{playerWon} Won the Game.</h3>
+            <h3 className='player'>{username} Won the Game.</h3>
             <button onClick={restartGame}>
                 Restart
             </button>
