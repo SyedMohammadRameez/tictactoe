@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Square from "./Square";
 import WinnerScreen from "./WinnerScreen";
 import { Patterns } from "../utilities/Patterns";
+import PlayerSelectionScreen from "./PlayerSelection";
+import { PlayerInput,GameHistory } from "./PlayerSelection";
 
 //game sounds initialize
 const click = new Audio("./click.mp3");
@@ -18,72 +20,7 @@ const gameWinner = () => {
 const gameRestart = () => {
   restartSound.play();
 };
-
-// strat : move these to a seperate file
-const PlayerSelectionScreen = ({ handlePlayerSelection }) => {
-  return (
-    <div>
-      <h2>Choose Player</h2>
-      <div>
-        <button onClick={() => handlePlayerSelection("🟡")}>🟡</button>
-        <button onClick={() => handlePlayerSelection("❌")}>❌</button>
-      </div>
-    </div>
-  );
-};
-
-const PlayerInput = ({
-  label = "Player Name: {player}",
-  value,
-  onChange,
-  handleUsername,
-}) => {
-  return (
-    <div>
-      <h2>{label}</h2>
-      <div>
-        <input type="text" value={value} onChange={onChange} />
-        <button onClick={handleUsername}>Create</button>
-      </div>
-    </div>
-  );
-};
-
-const GameHistory = ({ gameHistory, handleGameHistory }) => {
-  return (
-    <div>
-      <h2>Game history</h2>
-      <div style={{ 
-        display: 'flex',
-        flexDirection: 'column'
-       }}>
-        {gameHistory.map((gHistory, i) => {
-          return (
-            <button
-              style={{
-                background: "#fff",
-                color: "#000",
-                border: "1px solid #000",
-                padding: "5px 10px",
-                margin: "5px",
-                cursor: "pointer",
-              }}
-              onClick={() => handleGameHistory(gHistory, i)}
-              className="hisotry"
-              key={i}
-            >
-              {gHistory.player}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-// end
-
-
+   
 
 function Game() {
   const [gameStart, setGameStart] = useState(false);
